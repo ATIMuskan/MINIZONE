@@ -1,28 +1,27 @@
-const Image = require('../models/Image');
+const ProductImage = require('../models/Image');
 const fs = require('fs');
 const path = require('path');
 
-
-exports.uploadImage = async (req, res) => {
+exports.uploadProductImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const file = req.file;
-    const image = new Image({
-      name: file.originalname,
-      filename: file.filename,
-      size: (file.size / 1024).toFixed(2) + ' KB',
-      mimetype: file.mimetype,
+    const uploadedFile = req.file;
+    const productImage = new ProductImage({
+      name: uploadedFile.originalname,
+      filename: uploadedFile.filename,
+      size: (uploadedFile.size / 1024).toFixed(2) + ' KB',
+      mimetype: uploadedFile.mimetype,
       uploadTime: new Date(),
-      path: `/uploads/${file.filename}`
+      path: `/uploads/${uploadedFile.filename}`
     });
 
-       const savedImage = await image.save();
-       res.status(201).json({
-       message: 'Image uploaded successfully',
-       image: savedImage
+    const savedProductImage = await productImage.save();
+    res.status(201).json({
+      message: 'Image uploaded successfully',
+      image: savedProductImage
     });
   } catch (error) {
     console.error('Upload error:', error);
@@ -30,48 +29,47 @@ exports.uploadImage = async (req, res) => {
   }
 };
 
-
-exports.getImages = async (req, res) => {
+exports.getProductImages = async (req, res) => {
   try {
-    const images = await Image.find().sort({ uploadTime: -1 });
-    res.json(images);
+    const productImages = await ProductImage.find().sort({ uploadTime: -1 });
+    res.json(productImages);
   } catch (error) {
     console.error('Get images error:', error);
     res.status(500).json({ message: 'Failed to fetch images', error: error.message });
   }
 };
 
-exports.getImage = async (req, res) => {
+exports.getProductImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const image = await Image.findById(id);
+    const productImage = await ProductImage.findById(id);
     
-    if (!image) {
+    if (!productImage) {
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    res.json(image);
+    res.json(productImage);
   } catch (error) {
     console.error('Get image error:', error);
     res.status(500).json({ message: 'Failed to fetch image', error: error.message });
   }
 };
 
-exports.deleteImage = async (req, res) => {
+exports.deleteProductImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const image = await Image.findById(id);
+    const productImage = await ProductImage.findById(id);
     
-    if (!image) {
+    if (!productImage) {
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    const filePath = path.join(__dirname, '..', 'uploads', image.filename);
+    const filePath = path.join(__dirname, '..', 'uploads', productImage.filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    await Image.findByIdAndDelete(id);
+    await ProductImage.findByIdAndDelete(id);
     res.json({ message: 'Image deleted successfully', id });
   } catch (error) {
     console.error('Delete error:', error);
@@ -79,7 +77,7 @@ exports.deleteImage = async (req, res) => {
   }
 };
 
-exports.replaceImage = async (req, res) => {
+exports.replaceProductImage = async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -87,33 +85,33 @@ exports.replaceImage = async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const existingImage = await Image.findById(id);
-    if (!existingImage) {
+    const productImage = await ProductImage.findById(id);
+    if (!productImage) {
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    const oldFilePath = path.join(__dirname, '..', 'uploads', existingImage.filename);
+    const oldFilePath = path.join(__dirname, '..', 'uploads', productImage.filename);
     if (fs.existsSync(oldFilePath)) {
       fs.unlinkSync(oldFilePath);
     }
 
-    const file = req.file;
-    const updatedImage = await Image.findByIdAndUpdate(
+    const uploadedFile = req.file;
+    const updatedProductImage = await ProductImage.findByIdAndUpdate(
       id,
       {
-        name: file.originalname,
-        filename: file.filename,
-        size: (file.size / 1024).toFixed(2) + ' KB',
-        mimetype: file.mimetype,
+        name: uploadedFile.originalname,
+        filename: uploadedFile.filename,
+        size: (uploadedFile.size / 1024).toFixed(2) + ' KB',
+        mimetype: uploadedFile.mimetype,
         uploadTime: new Date(),
-        path: `/uploads/${file.filename}`
+        path: `/uploads/${uploadedFile.filename}`
       },
       { new: true }
     );
 
     res.json({
-        message: 'Image replaced successfully',
-        image: updatedImage
+      message: 'Image replaced successfully',
+      image: updatedProductImage
     });
   } catch (error) {
     console.error('Replace error:', error);
