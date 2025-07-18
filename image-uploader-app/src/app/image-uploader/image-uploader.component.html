@@ -1,0 +1,106 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <div class="header">
+    <h1>🛍️ ImageShop Pro</h1>
+    <p>Your premium image marketplace - Upload, manage, and showcase your digital products</p>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-number">{{ productImages.length }}</span>
+        <div class="stat-label">Products</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ getTotalGallerySize() }}</span>
+        <div class="stat-label">Storage Used</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ getGallerySuccessRate() }}%</span>
+        <div class="stat-label">Success Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <label for="imageUpload" class="upload-label">
+      <div class="upload-icon">📤</div>
+      <div class="upload-text">Add New Products</div>
+      <div class="upload-subtext">Drop your images here or click to browse • JPEG, PNG up to 10MB</div>
+      <input 
+        id="imageUpload" 
+        type="file" 
+        multiple 
+        accept="image/jpeg,image/png" 
+        (change)="onProductFileInput($event)" 
+      />
+    </label>
+    <div class="error" *ngIf="galleryError">
+      {{ galleryError }}
+    </div>
+  </div>
+
+  <div class="products-section">
+    <div class="section-header">
+      <h2 class="section-title">Product Gallery</h2>
+      <div class="view-toggle">
+        <button 
+          class="view-btn" 
+          [class.active]="galleryViewMode === 'grid'"
+          (click)="setGalleryViewMode('grid')">
+          🔳 Grid
+        </button>
+        <button 
+          class="view-btn" 
+          [class.active]="galleryViewMode === 'list'"
+          (click)="setGalleryViewMode('list')">
+          📋 List
+        </button>
+      </div>
+    </div>
+
+    <div class="products-grid" [class.list-view]="galleryViewMode === 'list'">
+      <div class="product-card amazon-card" *ngFor="let img of productImages; trackBy: trackByProductId">
+        <div class="product-image amazon-image">
+          <img 
+            [src]="img.url" 
+            [alt]="img.name || 'Product image'"
+            loading="lazy"
+          />
+          <div class="product-badge">NEW</div>
+          <div class="loading-overlay" *ngIf="img.isLoading">
+            <div class="loading-spinner"></div>
+            <div>Processing...</div>
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="product-info amazon-info">
+          <h3 class="product-name">{{ img.name }}</h3>
+          <div class="product-meta">
+            <span>📦 {{ img.size }}</span>
+            <span>🕒 {{ img.uploadTime | date:'short' }}</span>
+          </div>
+          <div class="product-price">₹{{ calculateProductPrice(img.size) }}</div>
+          <div class="product-actions amazon-actions">
+            <button class="btn btn-primary" [disabled]="img.isLoading">Add to Cart</button>
+            <button class="btn btn-danger" (click)="removeProductImage(img._id)" [disabled]="img.isLoading">🗑️ Delete</button>
+            <label class="btn btn-replace" [class.disabled]="img.isLoading">
+              🔄 Replace
+              <input 
+                type="file" 
+                accept="image/jpeg,image/png" 
+                (change)="replaceProductImage(img._id, $event)" 
+                [disabled]="img.isLoading"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="productImages.length === 0">
+      <h3>No products yet</h3>
+      <p>Start building your digital storefront by uploading your first product images above.</p>
+    </div>
+  </div>
+</div>
